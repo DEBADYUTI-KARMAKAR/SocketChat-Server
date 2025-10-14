@@ -27,6 +27,7 @@ io.on("connection", (socket) => {
     socket.emit("connected");
   });
 
+  
   // 2. Join a specific chat room
   socket.on("join chat", (room) => {
     socket.join(room);
