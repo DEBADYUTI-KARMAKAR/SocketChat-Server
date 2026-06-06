@@ -29,6 +29,17 @@ const sendMessage = asyncHandler(async (req, res) => {
     await Chat.findByIdAndUpdate(req.body.chatId, {
       latestMessage: message,
     });
+    
+    const chat = message.chat;
+    if (chat?.users) {
+      chat.users.forEach((user) => {
+        // Don't notify the sender
+        if (user._id.toString() === req.user._id.toString()) return;
+
+        // Emit to receiver's personal room (they joined via socket "setup")
+        global.io.in(user._id.toString()).emit("message received", message);
+      });
+    }
 
     res.status(200).json({
       data: message,

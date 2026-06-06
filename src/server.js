@@ -1,21 +1,19 @@
 const dotenv = require("dotenv");
 const connectDB = require("./db/index");
-const app = require("./app")
-dotenv.config()
+const app = require("./app");
+dotenv.config();
 const PORT = process.env.PORT || 3000;
-connectDB()
+connectDB();
 
-let server=app.listen(PORT,()=>{
-    console.log("Running on",PORT);
-    
-})
+let server = app.listen(PORT, () => {
+  console.log("Running on", PORT);
+});
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
     origin: "http://localhost:3000",
   },
 });
-
 
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
@@ -27,7 +25,6 @@ io.on("connection", (socket) => {
     socket.emit("connected");
   });
 
-  
   // 2. Join a specific chat room
   socket.on("join chat", (room) => {
     socket.join(room);
@@ -54,4 +51,11 @@ io.on("connection", (socket) => {
     console.log("User disconnected:", socket.userId);
     if (socket.userId) socket.leave(socket.userId);
   });
+  socket.on("setup", (userData) => {
+    console.log("Setup received for user:", userData._id); // ← add this
+    socket.join(userData._id);
+    socket.userId = userData._id;
+    socket.emit("connected");
+  });
 });
+global.io = io;
